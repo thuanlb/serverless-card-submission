@@ -1,0 +1,81 @@
+service: serverless-crud-api
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-southeast-1
+  environment:
+    DYNAMODB_TABLE: CardsTable
+  apiGateway:
+    usagePlan:
+      throttle:
+        rateLimit: 1
+        burstLimit: 2
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:Scan
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - arn:aws:dynamodb:ap-southeast-1:*:table/CardsTable
+
+functions:
+  createCard:
+    handler: handler.createCard
+    events:
+      - http:
+          path: cards
+          method: post
+          cors: true
+
+  getAllCards:
+    handler: handler.getAllCards
+    events:
+      - http:
+          path: cards
+          method: get
+          cors: true
+
+  getCard:
+    handler: handler.getCard
+    events:
+      - http:
+          path: cards/{id}
+          method: get
+          cors: true
+
+  updateCard:
+    handler: handler.updateCard
+    events:
+      - http:
+          path: cards/{id}
+          method: put
+          cors: true
+
+  deleteCard:
+    handler: handler.deleteCard
+    events:
+      - http:
+          path: cards/{id}
+          method: delete
+          cors: true
+
+resources:
+  Resources:
+    CardsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CardsTable
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PROVISIONED
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
