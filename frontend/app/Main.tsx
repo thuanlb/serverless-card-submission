@@ -91,7 +91,9 @@ export default function Main() {
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="image">Image URL</Label>
+                  <Label htmlFor="image" className="mb-1">
+                    Image URL
+                  </Label>
                   <Input
                     id="image"
                     value={image}
@@ -100,7 +102,9 @@ export default function Main() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name" className="mb-1">
+                    Name
+                  </Label>
                   <Input
                     id="name"
                     value={name}
@@ -109,7 +113,9 @@ export default function Main() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="position">Position</Label>
+                  <Label htmlFor="position" className="mb-1">
+                    Position
+                  </Label>
                   <Input
                     id="position"
                     value={position}
