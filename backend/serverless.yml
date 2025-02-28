@@ -21,6 +21,10 @@ provider:
         - dynamodb:DeleteItem
       Resource:
         - arn:aws:dynamodb:ap-southeast-1:*:table/CardsTable
+  httpApi:
+    cors: true
+  logs:
+    httpApi: true
 
 functions:
   createCard:
@@ -30,6 +34,10 @@ functions:
           path: cards
           method: post
           cors: true
+      - http:
+          path: cards
+          method: options
+          cors: true
 
   getAllCards:
     handler: handler.getAllCards
@@ -37,6 +45,10 @@ functions:
       - http:
           path: cards
           method: get
+          cors: true
+      - http:
+          path: cards
+          method: options
           cors: true
 
   getCard:
@@ -46,6 +58,10 @@ functions:
           path: cards/{id}
           method: get
           cors: true
+      - http:
+          path: cards/{id}
+          method: options
+          cors: true
 
   updateCard:
     handler: handler.updateCard
@@ -54,6 +70,10 @@ functions:
           path: cards/{id}
           method: put
           cors: true
+      - http:
+          path: cards/{id}
+          method: options
+          cors: true
 
   deleteCard:
     handler: handler.deleteCard
@@ -61,6 +81,10 @@ functions:
       - http:
           path: cards/{id}
           method: delete
+          cors: true
+      - http:
+          path: cards/{id}
+          method: options
           cors: true
 
 resources:

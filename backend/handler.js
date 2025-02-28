@@ -4,6 +4,18 @@ const { v4: uuidv4 } = require("uuid");
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = process.env.DYNAMODB_TABLE;
 
+const createResponse = (statusCode, body) => {
+  return {
+    statusCode,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Methods": "OPTIONS, POST, GET, PUT, DELETE",
+    },
+    body: JSON.stringify(body),
+  };
+};
+
 // 🟢 Create Card
 module.exports.createCard = async (event) => {
   const { name, position, image } = JSON.parse(event.body);
@@ -11,20 +23,14 @@ module.exports.createCard = async (event) => {
 
   await dynamoDB.put({ TableName: TABLE_NAME, Item: newCard }).promise();
 
-  return {
-    statusCode: 201,
-    body: JSON.stringify(newCard),
-  };
+  return createResponse(201, newCard);
 };
 
 // 🟢 Get All Cards
 module.exports.getAllCards = async () => {
   const result = await dynamoDB.scan({ TableName: TABLE_NAME }).promise();
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify(result.Items),
-  };
+  return createResponse(200, result.Items);
 };
 
 // 🔵 Get Card by ID
@@ -35,10 +41,10 @@ module.exports.getCard = async (event) => {
     .promise();
 
   if (!result.Item) {
-    return { statusCode: 404, body: JSON.stringify({ error: "Card not found" }) };
+    return createResponse(404, { error: "Card not found" });
   }
 
-  return { statusCode: 200, body: JSON.stringify(result.Item) };
+  return createResponse(200, result.Item);
 };
 
 // 🟡 Update Card
@@ -50,13 +56,17 @@ module.exports.updateCard = async (event) => {
     .update({
       TableName: TABLE_NAME,
       Key: { id },
-      UpdateExpression: "set name = :n, position = :p, image = :i",
+      UpdateExpression: "SET #name = :n, #position = :p, image = :i",
+      ExpressionAttributeNames: {
+        "#name": "name",
+        "#position": "position",
+      },
       ExpressionAttributeValues: { ":n": name, ":p": position, ":i": image },
       ReturnValues: "ALL_NEW",
     })
     .promise();
 
-  return { statusCode: 200, body: JSON.stringify({ id, name, position, image }) };
+  return createResponse(200, { id, name, position, image });
 };
 
 // 🔴 Delete Card
@@ -65,5 +75,5 @@ module.exports.deleteCard = async (event) => {
 
   await dynamoDB.delete({ TableName: TABLE_NAME, Key: { id } }).promise();
 
-  return { statusCode: 200, body: JSON.stringify({ message: "Card deleted" }) };
+  return createResponse(200, { message: "Card deleted" });
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import Image from "next/image";
+import { createEntry, updateEntry, deleteEntry } from "./api";
 
 interface Entry {
   id: number;
@@ -23,22 +24,7 @@ interface Entry {
 }
 
 export default function Main() {
-  const [entries, setEntries] = useState<Entry[]>([
-    {
-      id: 1,
-      name: "John Doe",
-      position: "Serverless Developer",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTw4xIzlTTRJKIQB1tq1Jbs5Rfj7hU6h1UtPg&s",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      position: "Cloud Engineer",
-      image:
-        "https://marketplace.canva.com/EAFltIh8PKg/1/0/1600w/canva-cute-anime-cartoon-illustration-girl-avatar-J7nVyTlhTAE.jpg",
-    },
-  ]);
+  const [entries, setEntries] = useState<Entry[]>([]);
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [currentEntry, setCurrentEntry] = useState<Entry | null>(null);
@@ -46,21 +32,31 @@ export default function Main() {
   const [name, setName] = useState<string>("");
   const [position, setPosition] = useState<string>("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const fetchEntries = async () => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}`);
+    const data = await response.json();
+    setEntries(data);
+  };
+
+  useEffect(() => {
+    fetchEntries();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isEditing && currentEntry) {
-      setEntries(
-        entries.map((entry) =>
-          entry.id === currentEntry.id
-            ? { ...entry, image, name, position }
-            : entry
-        )
-      );
-      setIsEditing(false);
-      setCurrentEntry(null);
-    } else {
-      const newEntry: Entry = { id: entries.length + 1, image, name, position };
-      setEntries([...entries, newEntry]);
+    const entryData = { image, name, position };
+
+    try {
+      if (isEditing && currentEntry) {
+        await updateEntry(currentEntry.id, entryData);
+        setIsEditing(false);
+        setCurrentEntry(null);
+      } else {
+        await createEntry(entryData);
+      }
+      fetchEntries();
+    } catch (error) {
+      console.error(error);
     }
     setImage("");
     setName("");
@@ -75,12 +71,17 @@ export default function Main() {
     setPosition(entry.position);
   };
 
-  const handleDelete = (id: number) => {
-    setEntries(entries.filter((entry) => entry.id !== id));
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteEntry(id);
+      fetchEntries();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto p-8">
       <h1 className="text-3xl font-bold mb-6">CRUD Card</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Card>
@@ -191,6 +192,7 @@ export default function Main() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleDelete(entry.id)}
+                          disabled={isEditing}
                         >
                           Delete
                         </Button>
