@@ -14,7 +14,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import Image from "next/image";
-import { createEntry, updateEntry, deleteEntry } from "./api";
+import { fetchEntries, createEntry, updateEntry, deleteEntry } from "./api";
 
 interface Entry {
   id: number;
@@ -32,14 +32,13 @@ export default function Main() {
   const [name, setName] = useState<string>("");
   const [position, setPosition] = useState<string>("");
 
-  const fetchEntries = async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}`);
-    const data = await response.json();
-    setEntries(data);
+  const fetchData = async () => {
+    const response = await fetchEntries();
+    setEntries(response);
   };
 
   useEffect(() => {
-    fetchEntries();
+    fetchData();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
