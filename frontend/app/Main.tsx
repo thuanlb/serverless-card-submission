@@ -53,7 +53,7 @@ export default function Main() {
       } else {
         await createEntry(entryData);
       }
-      fetchEntries();
+      await fetchData();
     } catch (error) {
       console.error(error);
     }
@@ -73,7 +73,7 @@ export default function Main() {
   const handleDelete = async (id: number) => {
     try {
       await deleteEntry(id);
-      fetchEntries();
+      await fetchData();
     } catch (error) {
       console.error(error);
     }
